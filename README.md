@@ -8,4 +8,8 @@
 
 ### Basic
 1. JavaScript Core Branch [바로가기](https://www.naver.com)
-1. JavaScript DOM Branch [바로가기](https://www.naver.com)
+- [ ] Variable 바로가기 
+- [ ] Strict Mode 바로가기
+- [ ] Global This 바로가기
+- [ ] Data Types 바로가기
+- [ ] Type Conversion 바로가기
