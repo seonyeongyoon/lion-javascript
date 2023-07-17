@@ -8,3 +8,5 @@ const params = {
 }
 
 liveServer.start(params);
+
+console.log(globalThis);
