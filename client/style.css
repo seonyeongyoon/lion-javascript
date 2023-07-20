@@ -1,0 +1,56 @@
+.ground{
+  width: 400px;
+  height: 300px;
+  border: 5px solid black;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+}
+
+
+#ball{
+
+}
+
+section{
+  background-color: orange;
+}
+
+article{
+  background-color: dodgerblue;
+}
+
+p{
+  background-color: hotpink;
+}
+
+.container{
+  padding: 1rem;
+  border: 1px solid black;
+}
+
+ul{
+  list-style: none;
+  display:flex;
+  gap:1rem;
+  justify-content: center;
+}
+
+ul > li{
+  background: rgba(0, 157, 255, 0.2);
+  padding:1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  
+}
+
+ul > li:hover{
+  background: rgba(0, 157, 255, 0.654);
+}
+
+button{
+  background:transparent;
+  border: none;
+  cursor: inherit;
+}

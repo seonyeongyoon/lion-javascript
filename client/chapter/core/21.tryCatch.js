@@ -56,7 +56,7 @@ let data = JSON.stringify({
 
 try {
 
-  const user = JSON.parse(data);
+  const user = JSON.parse(data);//parse: 문자로 변환된 객체를 원래 객체로 돌릴 때 씀
   
   if(!user.value) {
     throw new ReferenceError('해당 키 값은 존재하지 않습니다.');
@@ -68,6 +68,12 @@ try {
 
   document.body.innerHTML = `404 not found`;
 }
+finally {
+  console.log('에러가 발생하여도 해당 코드는 작동합니다.')
+}
+//JSON.stringify 는 문자로 반환 
+//JSON.parse 원래의 객체로 돌아옵니다.
+
 // try ... catch 동작 알고리즘
 // 1. try { ... } 코드 실행
 // 2-1. 오류가 발생하지 않은 경우, 내부 코드가 실행 됨 (catch 블록 무시)

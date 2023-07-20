@@ -7,10 +7,10 @@
 
 //일반함수
 function normalIsArray(data){
-  return Object.prototype.toString.call(dat).slice(8,-1).toLowerCase() === 'array';
+  return Object.prototype.toString.call(data).slice(8,-1).toLowerCase() === 'array';
 }
 //화살표함수
-const isArray = data => Object.prototype.toString.call(data).slice(8,-1).toLowerCase() === 'array';
+const isArray = data => Object.pototype.torString.call(data).slice(8,-1).toLowerCase() === 'array';
 
 
 //일반함수
@@ -177,6 +177,16 @@ job.forEach((item)=>{
 
 
 console.log(job);
+
+//피플 자료구조에서 나이만 모아놓은 배열이 필요하다 => 가공처리 -1 내보내고 싶다.
+const newAge = people.map((item) => {
+  return item.age - 1;
+})
+  
+job.forEach((item)=>{
+  document.body.insertAdjacentHTML('beforeend',item);
+})
+
 
 /* 요소 포함 여부 확인 ---------------------- */
 
