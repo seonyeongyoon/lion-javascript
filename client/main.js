@@ -1,84 +1,122 @@
-// 모듈 프로그래밍 => js 의 어려운 문법은 x 방법론
+import {
+  attr,
+  clearContents,
+  diceAnimation,
+  endScroll,
+  getNode,
+  getNodes,
+  insertLast,
+} from "./lib/index.js";
 
-// getNode 가져오기
+// [phase-1] 주사위 굴리기
+// 1. dice animation 불러오기
+// 2. 주사위 굴리기 버튼을 클릭하면 diceAnimation 실행 될 수 있도록
+//       - 주사위 굴리기 버튼을 가져온다.
+//       - 이벤트 핸들러를 연결한다.
+//       - 애니메이션 코드를 작성한다.
+// 3. 애니메이션 토글 제어
+// 4. 클로저 + IIFE 를 사용한 변수 보호
 
-// 번들러의 힘
-// webpack vite
+// [phase-2] 레코드 리스트 control / view
+// 1. 주사위가 멈추면 기록/초기화 버튼 활성화
+// 2. hidden 속성 제어하기
+//       - 기록 버튼 이벤트 바인딩
+//       - hidden 속성 false 만들기
+//       - 초기화 버튼 이벤트 바인딩
+//       - hidden 속성 true 만들기
+// 3. 주사위 값을 가져와서 랜더링
+// 4. 스크롤 위치 내리기
+// 5. 함수 분리
 
-import { getNode, clearContents, insertLast } from './lib/index.js';
+// [phase-3] 초기화 시키기
+//
 
-// [page-1]
-// 1. input value 값 가져오기
-// 2. 두 수의 합 더하기
-// 3. result 출력 하기
+// 배열 구조 분해 할당
 
-const first = getNode('#firstNumber');
-const second = getNode('#secondNumber');
-const result = getNode('.result');
+const [startButton, recordButton, resetButton] = getNodes(
+  ".buttonGroup > button"
+);
+const recordListWrapper = getNode(".recordListWrapper");
+const tbody = getNode(".recordList tbody");
 
-function handleInput() {
-  let firstValue = +first.value;
-  let secondValue = second.value / 1;
-  let total = firstValue + secondValue;
+// 진짜 진짜 쉬운 과제
 
-  clearContents(result);
-  insertLast(result, total);
+// disableElement(node)
+// enableElement(node)
+// isDisableState(node)  => true / false
+
+// visibleElement(node)
+// invisibleElement(node)
+// isVisibleState(node) => true / false
+
+let count = 0;
+let total = 0;
+
+function createItem(value) {
+  // 뿌려줄 템플릿 만들기
+  return /* html */ `
+    <tr>
+      <td>${++count}</td>
+      <td>${value}</td>
+      <td>${(total += value)}</td>
+    </tr>
+  `;
 }
 
-// [page-2]
-// clear 버튼을 누르면 모든 글자가 초기화 될 수 있도록 만들어주세요
+function renderRecordItem() {
+  // 큐브의 data-dice 값 가져오기
+  const diceValue = +attr("#cube", "data-dice");
 
-// 1. clear 버튼을 가져온다.
-const clear = getNode('#clear');
+  insertLast(tbody, createItem(diceValue));
 
-function handleClear() {
-  // 3. firstValue값을 지운다.
-  clearContents(first);
-
-  // 4. secondValue값을 지운다.
-  clearContents(second);
-
-  // 5. result의 값을 지운다.
-  // clearContents(result)
-
-  // 6. result에 - 값을 넣는다.
-  result.textContent = '-';
+  endScroll(recordListWrapper);
 }
 
-// 2. clear 버튼에 이벤트 핸들러를 연결한다.
-clear.addEventListener('click', handleClear);
-first.addEventListener('input', handleInput);
-second.addEventListener('input', handleInput);
+const handleRollingDice = ((e) => {
+  //let stopAnimation; //안에 있으면 클릭할 때마다 계속 재할당이 일어남. 값을 지우고 undefined가 된걸 계속 clearInterval 하게 되므로 정지가 안됨.
 
-function page2() {
-  const calculator = getNode('.calculator');
-  const clear = getNode('#clear');
-  const result = getNode('.result');
-  const numberInputs = Array.from(getNodes('input:not(#clear)'));
+  let isClicked = false;
+  let stopAnimation;
 
-  console.log(numberInputs);
+  return () => {
+    if (!isClicked) {
+      // 주사위 play
+      stopAnimation = setInterval(diceAnimation, 100);
+      recordButton.disabled = true;
+      resetButton.disabled = true;
+    } else {
+      // 주사위 stop
+      clearInterval(stopAnimation);
+      recordButton.disabled = false;
+      resetButton.disabled = false;
+    }
 
-  function handleInput() {
-    const total = numberInputs.reduce(
-      (total, input) => total + Number(input.value),
-      0
-    );
+    isClicked = !isClicked;
+  };
+})(); //IIFE패턴 (즉시실행함수)
 
-    console.log();
+// 회차 늘어날 수 있도록
+// diceValue 들어갈 수 있도록
+// total 값이 나올 수 있도록
 
-    clearContents(result);
-    insertLast(result, total);
-  }
+function handleRecord() {
+  recordListWrapper.hidden = false;
 
-  function handleClick() {
-    numberInputs.forEach(clearContents);
-    result.textContent = '-';
-  }
-
-  calculator.addEventListener('input', handleInput);
-  clear.addEventListener('click', handleClick);
-
-  // [page-3]
-  // 위 내용을 이벤트 위임으로 변경
-  // .calculator 이벤트 input
+  renderRecordItem();
 }
+
+function handleReset() {
+  recordListWrapper.hidden = true;
+  recordButton.disabled = true;
+  resetButton.disabled = true;
+
+  clearContents(tbody);
+
+  count = 0;
+  total = 0;
+}
+
+//btnGroup.addEventListener("click", handleRollingDice); => 이벤트위임
+startButton.addEventListener("click", handleRollingDice);
+recordButton.addEventListener("click", handleRecord);
+resetButton.addEventListener("click", handleReset);
