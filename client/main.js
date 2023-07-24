@@ -79,6 +79,7 @@ const handleRollingDice = ((e) => {
   let stopAnimation;
 
   return () => {
+    //클로저
     if (!isClicked) {
       // 주사위 play
       stopAnimation = setInterval(diceAnimation, 100);
