@@ -1,124 +1,112 @@
+/* global gsap */
+
 import {
+  getNode as $,
+  changeColor,
+  delayP,
   attr,
-  clearContents,
-  diceAnimation,
-  endScroll,
-  getNode,
-  getNodes,
   insertLast,
+  renderEmptyCard,
+  renderSpinner,
+  renderUserCard,
+  sunny,
+  clearContents,
 } from "./lib/index.js";
 
-// [phase-1] 주사위 굴리기
-// 1. dice animation 불러오기
-// 2. 주사위 굴리기 버튼을 클릭하면 diceAnimation 실행 될 수 있도록
-//       - 주사위 굴리기 버튼을 가져온다.
-//       - 이벤트 핸들러를 연결한다.
-//       - 애니메이션 코드를 작성한다.
-// 3. 애니메이션 토글 제어
-// 4. 클로저 + IIFE 를 사용한 변수 보호
+//Promise
+// xhr.get("https://jsonplaceholder.typicode.com/users", (res) => {
+//   console.log(res);
+// });
 
-// [phase-2] 레코드 리스트 control / view
-// 1. 주사위가 멈추면 기록/초기화 버튼 활성화
-// 2. hidden 속성 제어하기
-//       - 기록 버튼 이벤트 바인딩
-//       - hidden 속성 false 만들기
-//       - 초기화 버튼 이벤트 바인딩
-//       - hidden 속성 true 만들기
-// 3. 주사위 값을 가져와서 랜더링
-// 4. 스크롤 위치 내리기
-// 5. 함수 분리
+// const data = await sunny.get("https://jsonplaceholder.typicode.com/users");
+// console.log(data);
 
-// [phase-3] 초기화 시키기
-//
+// const URL = "https://jsonplaceholder.typicode.com/users/1";
 
-// 배열 구조 분해 할당
+// const response = await fetch(URL);
+// const data = await response.json();
 
-const [startButton, recordButton, resetButton] = getNodes(
-  ".buttonGroup > button"
-);
-const recordListWrapper = getNode(".recordListWrapper");
-//const tbody = getNode(".recordList tbody");
-memo("@tbody", () => getNode(".recordList tbody")); //setter
+// console.log(data);
 
-// 진짜 진짜 쉬운 과제
+// fetch(URL).then((result)=>{
 
-// disableElement(node)
-// enableElement(node)
-// isDisableState(node)  => true / false
+//     result // response object
+//     return result.json()
+// })
+// .then((result)=>{
+//   console.log( result );
+// })
 
-// visibleElement(node)
-// invisibleElement(node)
-// isVisibleState(node) => true / false
+//1. sunny 함수를 사용하여 user data 가져오기.
+//2. 함수 안으로 넣기
+//3. userData 렌더링
+//    - html template을 만든다.
+//    - 유저의 data를 넘겨주기.
+//    - insertLast를 사용해 유저 정보를 렌더링.
+//4. 함수 분리
 
-let count = 0;
-let total = 0;
+//에러가 발생했을 때
+//empty svg를 생성하고 렌더링해주세요.
 
-function createItem(value) {
-  // 뿌려줄 템플릿 만들기
-  return /* html */ `
-    <tr>
-      <td>${++count}</td>
-      <td>${value}</td>
-      <td>${(total += value)}</td>
-    </tr>
-  `;
+// [phase-3]
+// json-server 구성
+// data 설계
+// get, delete 통신 localhost
+// delete => 리랜더링(clear,render)
+
+const userCardInner = $(".user-card-inner");
+
+async function renderUserList() {
+  renderSpinner(userCardInner);
+  try {
+    await delayP();
+
+    gsap.to(".loadingSpinner", {
+      opacity: 0,
+      onComplete() {
+        $(".loadingSpinner").remove();
+      },
+    });
+    const response = await sunny.get("http://localhost:3000/users");
+    const userData = response.data;
+
+    userData.forEach((item) => renderUserCard(userCardInner, item));
+
+    changeColor(".user-card");
+
+    gsap.to(".user-card", {
+      x: 0,
+      opacity: 1,
+      stagger: 0.1,
+    });
+  } catch (err) {
+    console.log(err);
+    renderEmptyCard(userCardInner);
+    // location.href = '404.html'
+  }
 }
 
-function renderRecordItem() {
-  // 큐브의 data-dice 값 가져오기
-  const diceValue = +attr(memo("cube"), "data-dice");
+renderUserList();
 
-  insertLast(memo("@tbody"), createItem(diceValue));
+// 버튼을 클릭 했을 때 해당 article의 id 값을 가져옴.
 
-  endScroll(recordListWrapper);
+// - 이벤트 위임 e.target
+// - button 선택하기 -> 클릭한 대상의 가장 가까운... method
+// - attr() ,  dataset
+
+function handleDelete(e) {
+  const button = e.target.closest("button");
+  const article = e.target.closest("article");
+
+  if (!article || !button) return;
+
+  const id = attr(article, "data-index").slice(5);
+
+  sunny.delete(`http://localhost:3000/users/${id}`).then(() => {
+    // 컨텐츠 항목 전체 지우기
+    clearContents(userCardInner);
+    renderUserList();
+  });
 }
 
-const handleRollingDice = ((e) => {
-  //let stopAnimation; //안에 있으면 클릭할 때마다 계속 재할당이 일어남. 값을 지우고 undefined가 된걸 계속 clearInterval 하게 되므로 정지가 안됨.
-
-  let isClicked = false;
-  let stopAnimation;
-
-  return () => {
-    //클로저
-    if (!isClicked) {
-      // 주사위 play
-      stopAnimation = setInterval(diceAnimation, 100);
-      recordButton.disabled = true;
-      resetButton.disabled = true;
-    } else {
-      // 주사위 stop
-      clearInterval(stopAnimation);
-      recordButton.disabled = false;
-      resetButton.disabled = false;
-    }
-
-    isClicked = !isClicked;
-  };
-})(); //IIFE패턴 (즉시실행함수)
-
-// 회차 늘어날 수 있도록
-// diceValue 들어갈 수 있도록
-// total 값이 나올 수 있도록
-
-function handleRecord() {
-  recordListWrapper.hidden = false;
-
-  renderRecordItem();
-}
-
-function handleReset() {
-  recordListWrapper.hidden = true;
-  recordButton.disabled = true;
-  resetButton.disabled = true;
-
-  clearContents(memo("@tbody"));
-
-  count = 0;
-  total = 0;
-}
-
-//btnGroup.addEventListener("click", handleRollingDice); => 이벤트위임
-startButton.addEventListener("click", handleRollingDice);
-recordButton.addEventListener("click", handleRecord);
-resetButton.addEventListener("click", handleReset);
+userCardInner.addEventListener("click", handleDelete);
